@@ -1,0 +1,20 @@
+{
+  "name": "dsw-performance-tools",
+  "version": "1.0.0",
+  "description": "Tool to easily perform audits on any site",
+  "main": "index.js",
+  "scripts": {
+    "dsw": "node main.js --url https://www.dsw.com"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chrome-launcher": "^0.10.7",
+    "lighthouse": "^5.0.0",
+    "lighthouse-logger": "^1.2.0",
+    "minimist": "^1.2.0"
+  },
+  "dependencies": {
+    "webpagetest": "^0.3.9"
+  }
+}
