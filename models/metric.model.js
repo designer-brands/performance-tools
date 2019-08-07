@@ -5,6 +5,7 @@ module.exports = class Metric {
         this._format = format;
         this._controlValue = controlValue;
         this._testValue = testValue;
+        this._isPassing = false;
     }
 
     get label() {
@@ -23,9 +24,16 @@ module.exports = class Metric {
         return this._testValue;
     }
 
+    comparison() {
+        return Math.round(((this._controlValue - this._testValue) / this._controlValue) * 100);
+    }
+
+    isPassing() {
+        this._isPassing = this.comparison();
+    }
+
     print() {
-        const percent = (this._controlValue - this._testValue) / this._controlValue;
-        const isPassing = (percent >= 0) ? "PASSING" : "FAILED";
-        return `${this.label}: ${this._controlValue} | ${this._testValue} | ${Math.round(percent * 100)}% (${isPassing})`;
+        const passingText = this.comparison() >= 0 ? "PASSING" : "FAILED";
+        return `${this.label}: ${this._controlValue} | ${this._testValue} | ${this.comparison()}% (${passingText})`;
     }
 }

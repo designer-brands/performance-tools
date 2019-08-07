@@ -56,4 +56,10 @@ module.exports = class Results {
         })
     }
 
+    allPassed() {
+        return this._metrics.filter(metric => {
+            return metric.isPassing();
+        }).length === this._metrics.length;
+    }
+
 }

@@ -119,6 +119,12 @@ function pollForResults() {
 
             results.printTable();
 
+            if (results.allPassed()) {
+                process.exit();
+            } else {
+                process.exit(1);
+            }
+
         }
     }, 5000);
 }
