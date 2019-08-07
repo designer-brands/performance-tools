@@ -2,32 +2,27 @@ const WebPageTest = require("WebPageTest");
 const wpt = new WebPageTest('https://www.webpagetest.org/', 'A.f6c1b97d7834d0869f2c223f4e75ced5');
 //import AsciiTable from 'ascii-data-table'
 
+const ResultsModel = require("./models/results.model");
+const Metric = require("./models/metric.model");
+const METRIC_FORMATS = require("./constants/metric-formats.constant");
+
 const TEST_URL = "https://www.qa1.dswq1.com";
 const CONTROL_URL = "https://www.qa2.dswq1.com";
 
-const results = {
-    control: {
-        complete: false
-    },
-    test: {
-        complete: false
-    }
-};
+const results = new ResultsModel();
 
 const defaultWPTOptions = {
     connectivity: 'Cable',
-    location: 'Dulles:Chrome',
+    location: 'ec2-us-east-1',
     firstViewOnly: true,
     video: false,
-    runs: 1,
+    runs: 5,
     userAgent: 'chrome',
     emulateMobile: true,
     authenticationType: 0,
     login: 'qauser',
     password: 'Tested4quality!',
-    lighthouse: true,
-    notify: 'tonycontosta@dswinc.com',
-    pollResults: 10
+    lighthouse: false
 
 };
 
@@ -57,67 +52,108 @@ const statsOfInterestLabels = [
     '(Fully Loaded) Bytes In (KB)'
 ];
 
-function startPerfTesting() {
+function initRuns() {
 
-    console.log(`Performance Analysis Started: ${TEST_URL}`);
-
-    wpt.runTest(TEST_URL, defaultWPTOptions, (err, result) => {
-
-        console.log(err, result);
-
-        if (result && result.data) {
-            console.log(`Performance Analysis Completed: ${TEST_URL}`);
-            results.test.complete = true;
-
-            const stats = result.data.average.firstView;
-
-            statsOfInterest.forEach(stat => {
-                results.test[stat] = stats[stat];
-            });
-        }
-    });
-
-    console.log(`Performance Analysis Started: ${CONTROL_URL}`);
+    console.log(`CONTROL Run started for: ${CONTROL_URL}`);
     wpt.runTest(CONTROL_URL, defaultWPTOptions, (err, result) => {
 
-        console.log(err, result);
+        results.controlRun.id = result.data.testId;
+        console.log(`CONTROL Run ID: ${results.controlRun.id}`);
 
-        if (result && result.data) {
-            console.log(`Performance Analysis Completed: ${CONTROL_URL}`);
+        const controlInterval = setInterval(() => {
+            wpt.getTestStatus(results.controlRun.id, (err, result) => {
 
-            results.control.complete = true;
+                console.log(`CONTROL Run Status: ${result.statusCode}: ${result.statusText}`);
 
-            const stats = result.data.average.firstView;
+                if (result.statusCode === 200) {
+                    console.log(`CONTROL Run Completed for ${CONTROL_URL}`);
+                    clearInterval(controlInterval);
 
-            statsOfInterest.forEach(stat => {
-                results.control[stat] = stats[stat];
+                    wpt.getTestResults(results.controlRun.id, (err, result) => {
+
+                        results.controlRun.rawData = result.data.average.firstView;
+                        results.controlRun.complete = true;
+                    });
+                }
             });
-        }
+        }, 10000);
+    });
+
+    console.log(`TEST Run started for ${TEST_URL}`);
+    wpt.runTest(TEST_URL, defaultWPTOptions, (err, result) => {
+
+        results.testRun.id = result.data.testId;
+        console.log(`TEST Run ID: ${results.testRun.id}`);
+
+        const controlInterval = setInterval(() => {
+            wpt.getTestStatus(results.testRun.id, (err, result) => {
+
+                console.log(`TEST Run Status: ${result.statusCode}: ${result.statusText}`);
+
+                if (result.statusCode === 200) {
+                    console.log(`TEST Run Completed for ${CONTROL_URL}`);
+                    clearInterval(controlInterval);
+
+                    wpt.getTestResults(results.testRun.id, (err, result) => {
+                        console.log(result);
+                        results.testRun.rawData = result.data.average.firstView;
+                        results.testRun.complete = true;
+                    });
+                }
+            });
+        }, 10000);
     });
 
     pollForResults();
 }
 
 function pollForResults() {
-    const interval = setInterval(()=> {
-        console.log("Checking for completion of both tests...");
-        if (results.test.complete && results.control.complete) {
+    const pollingInterval = setInterval(() => {
 
-            console.log("COMPLETED!!!");
+        if (results.readyForProcessing()) {
 
-            clearInterval(interval);
+            console.log("Both runs complete.");
+            clearInterval(pollingInterval);
 
-            for (let i = 0; i < statsOfInterestLabels.length; i++) {
+            parseResults();
 
-                const comparison = (stats.control[i] - stats.test[i]) / stats.control[i];
-                console.log(`${statsOfInterestLabels[i]}: ${Math.round(comparison) * 100}%`);
-            }
+            results.printTable();
 
-            //console.log('Waterfall view:', result.data.runs[1].firstView.images.waterfall);
-        } else {
-            console.log("Still working...");
         }
-    }, 30000);
+    }, 5000);
 }
 
-startPerfTesting();
+function parseResults() {
+
+    for (let i = 0; i < statsOfInterest.length; i++) {
+
+        let statID = statsOfInterest[i];
+        let statLabel = statsOfInterestLabels[i];
+        let statFormat = "";
+
+        switch (statID) {
+            case "loadTime":
+            case "TTFB":
+            case "render":
+            case "SpeedIndex":
+            case "fullyLoaded":
+                statFormat = METRIC_FORMATS.UNIT.TIME;
+                break;
+            case "domElements":
+            case "requestsDoc":
+            case "requestsFull":
+                statFormat = METRIC_FORMATS.UNIT.COUNT;
+                break;
+
+            case "bytesInDoc":
+            case "bytesIn":
+                statFormat = METRIC_FORMATS.UNIT.BYTES;
+                break;
+        }
+
+        results.addMetric(statLabel, statFormat, statID);
+    }
+
+}
+
+initRuns();
