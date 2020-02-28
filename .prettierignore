@@ -1,0 +1,10 @@
+package.json
+angular.json
+package-lock.json
+tsconfig.json
+tslint.json
+
+/node_modules
+/logs
+
+/docs/pull_request_template.md

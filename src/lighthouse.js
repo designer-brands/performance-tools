@@ -1,4 +1,4 @@
-const lighthouse = require('lighthouse');
+const lighthouse = require('src/lighthouse');
 const reportGenerator = require('lighthouse/lighthouse-core/report/report-generator');
 const fs = require('fs');
 
