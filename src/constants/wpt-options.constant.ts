@@ -1,6 +1,6 @@
 const WPT_OPTIONS = {
-	location: '##LOCATION_ID##:Chrome.3GFast',
-	connectivity: 'LTE',
+	location: '##LOCATION_ID##',
+	connectivity: 'cable',
 	runs: 3,
 	firstViewOnly: true,
 	video: false,

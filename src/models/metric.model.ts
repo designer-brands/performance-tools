@@ -1,25 +1,39 @@
+import METRIC_FORMATS from '../constants/metric-formats.constant';
+
+const chalk = require('chalk');
+
 export default class Metric {
-	readonly _label: string;
+	public label: string;
+	public value: number;
+
 	readonly _format: string;
-	readonly _value: number;
 	readonly _warningValue: number;
 	readonly _errorValue: number;
-	private _isPassing: any;
 
 	constructor(label, format, value, warningValue, errorValue) {
-		this._label = label;
+		this.label = label;
 		this._format = format;
-		this._value = value;
+		this.value = Math.floor(value);
 		this._warningValue = warningValue;
 		this._errorValue = errorValue;
-		this._isPassing = false;
 	}
 
-	get label() {
-		return this._label;
+	get formattedValue() {
+		if (this._format === METRIC_FORMATS.UNIT.TIME) {
+			return `${this.value}ms`;
+		} else {
+			return this.value;
+		}
 	}
 
-	print() {
-		return `${this.label}: ${this._value}`;
+	get status() {
+		let msg = chalk.green('OK');
+		if (this._errorValue < this.value) {
+			msg = chalk.red(`ERROR (>${this._errorValue})`);
+		} else if (this._warningValue < this.value) {
+			msg = chalk.yellow(`WARN (>${this._warningValue})`);
+		}
+
+		return msg;
 	}
 }

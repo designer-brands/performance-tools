@@ -1,7 +1,8 @@
-import METRIC_FORMATS from '../constants/metric-formats.constant';
 import STATS from '../constants/stats.constant';
 import Metric from '../models/metric.model';
 import Run from '../models/run.model';
+
+const AsciiTable = require('ascii-table');
 
 export default class Results {
 	private _run: Run;
@@ -26,9 +27,15 @@ export default class Results {
 	}
 
 	printTable() {
+		const table = new AsciiTable('Performance Results');
+
+		table.setHeading('Statistic', 'Value', 'Status');
+
 		this._metrics.forEach(metric => {
-			console.log(metric.print());
+			table.addRow(metric.label, metric.formattedValue, metric.status);
 		});
+
+		console.log(table.toString());
 	}
 
 	allPassed() {

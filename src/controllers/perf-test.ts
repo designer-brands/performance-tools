@@ -60,21 +60,23 @@ export class PerfTest {
 				// replacing config location with fastest location id
 				WPT_OPTIONS.location = WPT_OPTIONS.location.replace('##LOCATION_ID##', locationId);
 
-				console.log(`TEST Run started using location ${WPT_OPTIONS.location} for ${this._url}`);
+				console.log(`Run started using location ${WPT_OPTIONS.location} for ${this._url}`);
 
 				this._wpt.runTest(this._url, WPT_OPTIONS, (err, result) => {
 					const testRun = new Run(result.data.testId);
 
 					const checkRunStatus = setInterval(() => {
 						this._wpt.getTestStatus(testRun.id, (err, result) => {
-							console.log(`TEST Run Status: ${result.statusCode}: ${result.statusText}`);
+							console.log(`Run Status: ${result.statusCode}: ${result.statusText}`);
 
 							if (result.statusCode === 200) {
-								console.log(`TEST Run Completed for ${this._url}`);
+								console.log(`Run Completed for ${this._url}`);
 								clearInterval(checkRunStatus);
 
 								this._wpt.getTestResults(testRun.id, (err, result) => {
-									console.log(result);
+									console.log(
+										`${result.data.testRuns} Runs ${result.data.connectivity} @ ${result.data.bwDown}Mbps and ${result.data.latency}ms latency`
+									);
 									testRun.rawData = result.data.average.firstView;
 									testRun.complete = true;
 
