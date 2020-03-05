@@ -1,0 +1,28 @@
+{
+	"API_KEY": "A.eb216c1ddff7f813701dcc9ec5b81ce5",
+	"WPT_HOST": "https://www.webpagetest.org/",
+	"TEST_CHECK_INTERVAL": 10000,
+	"ACCEPTED_LOCATIONS": ["ec2-us-east-1"],
+	"WPT": {
+		"location": "##LOCATION_ID##",
+		"connectivity": "coolc",
+		"runs": 3,
+		"firstViewOnly": true,
+		"video": false,
+		"private": true,
+		"userAgent": "chrome",
+		"emulateMobile": false,
+		"authenticationType": 0,
+		"login": "qauser",
+		"password": "Tested4quality!",
+		"lighthouse": false
+	},
+	"PAGES": [
+		"https://www.perf1.dswprf1.com/en/us/",
+		"https://www.perf1.dswprf1.com/en/us/category/womens-shoes/N-1z141jrZ1z141ju",
+		"https://www.perf1.dswprf1.com/en/us/product/fila-disruptor-ii-premium-sneaker---womens/417337?activeColor=125",
+		"https://www.perf1.dswprf1.com/en/us/shopping-bag",
+		"https://www.perf1.dswprf1.com/en/us/vip",
+		"https://www.perf1.dswprf1.com/en/us/sign-in"
+	]
+}

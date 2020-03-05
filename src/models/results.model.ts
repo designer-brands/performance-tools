@@ -7,6 +7,7 @@ const AsciiTable = require('ascii-table');
 export default class Results {
 	private _run: Run;
 	private _metrics = [];
+	private _table;
 
 	constructor() {}
 
@@ -14,35 +15,24 @@ export default class Results {
 		this._run = run;
 	}
 
-	readyForProcessing() {
-		return this._run.complete && this._run.complete;
-	}
-
 	parse() {
 		STATS.forEach(stat => {
 			this._metrics.push(
-				new Metric(stat.label, stat.format, this._run.rawData[stat.id], stat.warning, stat.error)
+				new Metric(stat.label, stat.format, this._run.firstView[stat.id], stat.warning, stat.error)
 			);
 		});
 	}
 
 	printTable() {
-		const table = new AsciiTable('Performance Results');
-
-		table.setHeading('Statistic', 'Value', 'Status');
+		this._table = new AsciiTable(
+			`Performance Results:\n${this._run.url}\n${this._run.data.testRuns} Runs ${this._run.data.connectivity} @ ${this._run.data.bwDown}Mbps and ${this._run.data.latency}ms latency`
+		);
+		this._table.setHeading('Statistic', 'Value', 'Status');
 
 		this._metrics.forEach(metric => {
-			table.addRow(metric.label, metric.formattedValue, metric.status);
+			this._table.addRow(metric.label, metric.formattedValue, metric.status);
 		});
 
-		console.log(table.toString());
-	}
-
-	allPassed() {
-		return (
-			this._metrics.filter(metric => {
-				return metric.isPassing();
-			}).length === this._metrics.length
-		);
+		console.log(this._table.toString());
 	}
 }

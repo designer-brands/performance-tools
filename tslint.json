@@ -73,19 +73,7 @@
         "ordered-imports": [
             true,
             {
-                "grouped-imports": true,
-                "groups": [
-                    {
-                        "name": "DBI",
-                        "match": "^@dbi.*",
-                        "order": 3
-                    },
-                    {
-                        "name": "3rd Party",
-                        "match": ".*",
-                        "order": 2
-                    }
-                ]
+                "grouped-imports": false
             }
         ],
         "prettier": true,
